@@ -82,7 +82,7 @@ export default class Task<T = any> implements CancellablePromise<T> {
    * @param value The value to resolve with
    */
   public static resolve<T>(value?: any): Task<T> {
-    return new this<T>(resolve => resolve(value));
+    return new this<T>((resolve) => resolve(value));
   }
 
   /**
@@ -179,8 +179,8 @@ export default class Task<T = any> implements CancellablePromise<T> {
           const promiseKeys = Object.keys(iterable);
 
           innerTask = new this((innerResolve, innerReject) => {
-            Promise.all(promiseKeys.map(key => iterable[key])).then(
-              promiseResults => {
+            Promise.all(promiseKeys.map((key) => iterable[key])).then(
+              (promiseResults) => {
                 const returnValue: { [key: string]: T } = {};
 
                 promiseResults.forEach((value, index) => {
@@ -305,7 +305,7 @@ export default class Task<T = any> implements CancellablePromise<T> {
     let _reject!: (reason?: any) => void;
 
     this._promise = new Promise<T>((resolve, reject) => {
-      _resolve = resolve;
+      _resolve = resolve as typeof _resolve;
       _reject = reject;
     });
 
@@ -323,14 +323,14 @@ export default class Task<T = any> implements CancellablePromise<T> {
     // Don't let the Task resolve if it's been canceled
     try {
       executor(
-        value => {
+        (value) => {
           if (this._state === State.Canceled) {
             return;
           }
           this._state = State.Fulfilled;
           _resolve(value);
         },
-        reason => {
+        (reason) => {
           if (this._state === State.Canceled) {
             return;
           }
@@ -373,7 +373,7 @@ export default class Task<T = any> implements CancellablePromise<T> {
       }
     }
 
-    this.children.forEach(child => child._cancel(finallyTask));
+    this.children.forEach((child) => child._cancel(finallyTask));
   }
 
   /**
@@ -410,9 +410,9 @@ export default class Task<T = any> implements CancellablePromise<T> {
     }
 
     const task = this.then<any>(
-      value =>
+      (value) =>
         Task.resolve(callback ? callback() : undefined).then(() => value),
-      reason =>
+      (reason) =>
         Task.resolve(callback ? callback() : undefined).then(() => {
           throw reason;
         })
@@ -446,7 +446,7 @@ export default class Task<T = any> implements CancellablePromise<T> {
       this._promise.then(
         // Don't call the onFulfilled or onRejected handlers if this Task
         // is canceled
-        function(value) {
+        function (value) {
           if (task._state === State.Canceled) {
             resolve();
           } else if (onFulfilled) {
@@ -459,7 +459,7 @@ export default class Task<T = any> implements CancellablePromise<T> {
             resolve(<any>value);
           }
         },
-        function(error) {
+        function (error) {
           if (task._state === State.Canceled) {
             resolve();
           } else if (onRejected) {
@@ -557,7 +557,7 @@ const enum State {
   Fulfilled = 0,
   Pending = 1,
   Rejected = 2,
-  Canceled = 3
+  Canceled = 3,
 }
 
 /**

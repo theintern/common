@@ -1,7 +1,7 @@
-import * as sinon from 'sinon';
+import sinon from 'sinon';
 import Evented, {
   CustomEventTypes,
-  EventObject
+  EventObject,
 } from '../../../src/lib/Evented';
 
 const { registerSuite } = intern.getInterface('object');
@@ -28,7 +28,7 @@ registerSuite('lib/Evented', {
     'on()'() {
       const eventStack: string[] = [];
       const evented = new Evented<FooBarEvents>();
-      const handle = evented.on('foo', event => {
+      const handle = evented.on('foo', (event) => {
         eventStack.push(event.type);
       });
 
@@ -48,7 +48,7 @@ registerSuite('lib/Evented', {
       const bar = Symbol();
       const eventStack: symbol[] = [];
       const evented = new Evented<{}, symbol>();
-      const handle = evented.on(foo, event => {
+      const handle = evented.on(foo, (event) => {
         eventStack.push(event.type);
       });
 
@@ -94,7 +94,7 @@ registerSuite('lib/Evented', {
         },
         () => {
           eventStack.push('foo2');
-        }
+        },
       ]);
 
       evented.emit({ type: 'foo' });
@@ -123,14 +123,14 @@ registerSuite('lib/Evented', {
       evented.emit({ type: 'foo' });
 
       assert.deepEqual(eventStack, ['one', 'two', 'three', 'one', 'three']);
-    }
+    },
   },
 
   'wildcards in event type name': {
     'all event types'() {
       const eventStack: string[] = [];
       const evented = new Evented<{}, string>();
-      evented.on('*', event => {
+      evented.on('*', (event) => {
         eventStack.push(event.type);
       });
 
@@ -143,7 +143,7 @@ registerSuite('lib/Evented', {
     'event types starting with a pattern'() {
       const eventStack: string[] = [];
       const evented = new Evented<{}, string>();
-      evented.on('foo:*', event => {
+      evented.on('foo:*', (event) => {
         eventStack.push(event.type);
       });
 
@@ -156,7 +156,7 @@ registerSuite('lib/Evented', {
     'event types ending with a pattern'() {
       const eventStack: string[] = [];
       const evented = new Evented<{}, string>();
-      evented.on('*:bar', event => {
+      evented.on('*:bar', (event) => {
         eventStack.push(event.type);
       });
 
@@ -169,7 +169,7 @@ registerSuite('lib/Evented', {
     'event types contains a pattern'() {
       const eventStack: string[] = [];
       const evented = new Evented<{}, string>();
-      evented.on('*foo*', event => {
+      evented.on('*foo*', (event) => {
         eventStack.push(event.type);
       });
 
@@ -183,10 +183,10 @@ registerSuite('lib/Evented', {
     'multiple matches'() {
       const eventStack: string[] = [];
       const evented = new Evented();
-      evented.on('foo', event => {
+      evented.on('foo', (event) => {
         eventStack.push(`foo->${event.type.toString()}`);
       });
-      evented.on('*foo', event => {
+      evented.on('*foo', (event) => {
         eventStack.push(`*foo->${event.type.toString()}`);
       });
 
@@ -195,7 +195,7 @@ registerSuite('lib/Evented', {
       evented.emit({ type: 'barfoo' });
 
       assert.deepEqual(eventStack, ['foo->foo', '*foo->foo', '*foo->barfoo']);
-    }
+    },
   },
 
   own: {
@@ -267,18 +267,18 @@ registerSuite('lib/Evented', {
             );
           });
         });
-      }
+      },
     },
 
     'after destruction throws'() {
       const destroyable = new Evented();
       destroyable.own({
-        destroy() {}
+        destroy() {},
       });
       return destroyable.destroy().then(() => {
         assert.throws(() => {
           destroyable.own({
-            destroy() {}
+            destroy() {},
           });
         }, Error);
       });
@@ -305,7 +305,7 @@ registerSuite('lib/Evented', {
         const destroyable = new Evented();
         const handle = destroyable.own([
           { destroy: destroy1 },
-          { destroy: destroy2 }
+          { destroy: destroy2 },
         ]);
         assert.strictEqual(
           destroy1.callCount,
@@ -335,7 +335,7 @@ registerSuite('lib/Evented', {
           1,
           'second destroy was not called again'
         );
-      }
-    }
-  }
+      },
+    },
+  },
 });

@@ -1,17 +1,20 @@
 import { join, resolve } from 'path';
 import { Configuration } from 'webpack';
 import { sync as glob } from 'glob';
-import * as nodeExternals from 'webpack-node-externals';
-import * as CopyWebpackPlugin from 'copy-webpack-plugin';
+import nodeExternals from 'webpack-node-externals';
+import CopyWebpackPlugin from 'copy-webpack-plugin';
 
 const common: Configuration = {
   node: false,
   performance: {
     // Hides a warning about large bundles.
-    hints: false
+    hints: false,
   },
   resolve: {
-    extensions: ['.ts', '.js']
+    extensions: ['.ts', '.js'],
+    fallback: {
+      util: false,
+    },
   },
   stats: {
     assets: false,
@@ -20,8 +23,8 @@ const common: Configuration = {
     hash: false,
     modules: false,
     version: false,
-    warnings: true
-  }
+    warnings: true,
+  },
 };
 
 const config: Configuration = {
@@ -33,7 +36,7 @@ const config: Configuration = {
     rules: [
       {
         test: /@dojo/,
-        use: 'umd-compat-loader'
+        use: 'umd-compat-loader',
       },
       {
         test: /\.ts/,
@@ -42,9 +45,9 @@ const config: Configuration = {
           loader: 'ts-loader',
           options: {
             instance: 'src',
-            configFile: join(__dirname, 'tsconfig.json')
-          }
-        }
+            configFile: join(__dirname, 'tsconfig.json'),
+          },
+        },
       },
       {
         test: /\.ts/,
@@ -53,11 +56,11 @@ const config: Configuration = {
           loader: 'ts-loader',
           options: {
             instance: 'tests',
-            configFile: join(__dirname, 'tests', 'tsconfig.json')
-          }
-        }
-      }
-    ]
+            configFile: join(__dirname, 'tests', 'tsconfig.json'),
+          },
+        },
+      },
+    ],
   },
   output: {
     filename: join('_build', 'src', 'index.js'),
@@ -65,15 +68,18 @@ const config: Configuration = {
     // See https://github.com/webpack/webpack/issues/6522
     globalObject: 'typeof self !== "undefined" ? self : this',
     libraryTarget: 'umd',
-    path: resolve(__dirname)
+    path: resolve(__dirname),
   },
   plugins: [
-    new CopyWebpackPlugin([
-      { from: 'package.json', to: join('_build', 'src') },
-      { from: 'README.md', to: join('_build', 'src') },
-      { from: 'LICENSE', to: join('_build', 'src') }
-    ])
-  ]
+    new CopyWebpackPlugin({
+      patterns: [
+        { from: 'package.json', to: join('_build', 'src') },
+        { from: 'README.md', to: join('_build', 'src') },
+        { from: 'LICENSE', to: join('_build', 'src') },
+      ],
+    }),
+  ],
+  target: ['web', 'es5'],
 };
 
 const commonTest: Configuration = {
@@ -83,14 +89,14 @@ const commonTest: Configuration = {
     rules: [
       {
         test: /@dojo/,
-        use: 'umd-compat-loader'
+        use: 'umd-compat-loader',
       },
       {
         test: /.ts/,
         include: join(__dirname, 'src'),
         use: {
-          loader: '@theintern/istanbul-loader'
-        }
+          loader: '@theintern/istanbul-loader',
+        },
       },
       {
         test: /\.ts/,
@@ -98,34 +104,48 @@ const commonTest: Configuration = {
           loader: 'ts-loader',
           options: {
             instance: 'tests',
-            configFile: join(__dirname, 'tests', 'tsconfig.json')
-          }
-        }
-      }
-    ]
-  }
+            configFile: join(__dirname, 'tests', 'tsconfig.json'),
+          },
+        },
+      },
+    ],
+  },
+};
+
+// Browser shims
+const browserShimConfig: Configuration = {
+  ...common,
+  ...commonTest,
+  entry: './tests/shim.ts',
+  output: {
+    filename: join('_build', 'tests', 'browserShim.js'),
+    path: resolve(__dirname),
+  },
+  target: ['web', 'es5'],
 };
 
 // Unit tests for the browser
 const browserTestConfig: Configuration = {
   ...common,
   ...commonTest,
+  entry: glob('./tests/unit/**/*.ts'),
   output: {
     filename: join('_build', 'tests', 'browserUnit.js'),
-    path: resolve(__dirname)
-  }
+    path: resolve(__dirname),
+  },
+  target: ['web', 'es5'],
 };
 
 // Unit tests for Node
 const nodeTestConfig: Configuration = {
   ...common,
   ...commonTest,
-  externals: [nodeExternals()],
+  externals: [nodeExternals()] as Configuration['externals'],
   output: {
     filename: join('_build', 'tests', 'nodeUnit.js'),
-    path: resolve(__dirname)
+    path: resolve(__dirname),
   },
-  target: 'node'
+  target: 'node',
 };
 
 // Integration tests for Node
@@ -133,17 +153,18 @@ const nodeIntegrationTestConfig: Configuration = {
   ...common,
   ...commonTest,
   entry: glob('./tests/integration/**/*.ts'),
-  externals: [nodeExternals()],
+  externals: [nodeExternals()] as Configuration['externals'],
   output: {
     filename: join('_build', 'tests', 'nodeIntegration.js'),
-    path: resolve(__dirname)
+    path: resolve(__dirname),
   },
-  target: 'node'
+  target: 'node',
 };
 
 module.exports = [
   config,
   nodeTestConfig,
   nodeIntegrationTestConfig,
-  browserTestConfig
+  browserTestConfig,
+  browserShimConfig,
 ];

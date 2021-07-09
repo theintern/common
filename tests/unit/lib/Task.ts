@@ -1,7 +1,7 @@
 import Task, {
   isTask,
   DictionaryOfPromises,
-  ListOfPromises
+  ListOfPromises,
 } from '../../../src/lib/Task';
 
 const { registerSuite } = intern.getInterface('object');
@@ -9,7 +9,10 @@ const { assert } = intern.getPlugin('chai');
 
 registerSuite('lib/Task', {
   'isTask()'() {
-    const task = new Task(resolve => resolve(), () => {});
+    const task = new Task(
+      (resolve) => resolve(),
+      () => {}
+    );
 
     assert.isTrue(isTask(task), 'Should return true');
     assert.isFalse(isTask(Promise.resolve()), 'Should return false');
@@ -27,10 +30,10 @@ registerSuite('lib/Task', {
       assert.isFunction(task.cancel, 'A task should have a cancel function');
       assert.isFunction(task.finally, 'A task should have a finally function');
 
-      return task.then(result => {
+      return task.then((result) => {
         assert.strictEqual(result, 'foo', 'result should equal "foo"');
       });
-    }
+    },
   },
 
   '.all': {
@@ -65,7 +68,7 @@ registerSuite('lib/Task', {
       );
     },
 
-    'reject if any rejected': function() {
+    'reject if any rejected': function () {
       const dfd = this.async();
       const pending = new Task(() => {});
       const rejected = Task.reject(new Error('rejected'));
@@ -80,13 +83,13 @@ registerSuite('lib/Task', {
       );
     },
 
-    'foreign thenables': function() {
+    'foreign thenables': function () {
       const dfd = this.async();
       const normal = Task.resolve(1);
       const foreign = <PromiseLike<number>>{
         then(f: Function) {
           f(2);
-        }
+        },
       };
 
       Task.all([normal, foreign]).then(
@@ -96,7 +99,7 @@ registerSuite('lib/Task', {
       );
     },
 
-    'non-callable thenables': function() {
+    'non-callable thenables': function () {
       const dfd = this.async();
       const normal = Task.resolve(1);
       const foreign = { then: 'foo' };
@@ -138,10 +141,10 @@ registerSuite('lib/Task', {
             assert.isUndefined(value);
           })
         );
-      }
+      },
     },
 
-    'value not input': function() {
+    'value not input': function () {
       const dfd = this.async();
       const iterable = [0, 1];
 
@@ -185,7 +188,7 @@ registerSuite('lib/Task', {
         const pending: { [index: string]: PromiseLike<any> } = {
           foo: task1,
           bar: task2,
-          promise
+          promise,
         };
 
         task1.finally(() => {
@@ -199,8 +202,8 @@ registerSuite('lib/Task', {
           assert.isTrue(task1Finalized, 'Task 1 should have been finalized');
           assert.isTrue(task2Finalized, 'Task 2 should have been finalized');
         });
-      }
-    }
+      },
+    },
   },
 
   '.race': {
@@ -211,7 +214,10 @@ registerSuite('lib/Task', {
           assert.fail(false, true, 'Task should not have resolved');
         })
       );
-      setTimeout(dfd.callback(() => {}), 10);
+      setTimeout(
+        dfd.callback(() => {}),
+        10
+      );
     },
 
     'mixed values and resolved'() {
@@ -247,13 +253,13 @@ registerSuite('lib/Task', {
       );
     },
 
-    'foreign thenables': function() {
+    'foreign thenables': function () {
       const dfd = this.async();
       const normal = Task.resolve(1);
       const foreign = <PromiseLike<any>>{
         then(f: Function) {
           f(2);
-        }
+        },
       };
 
       Task.race([normal, foreign]).then(
@@ -261,7 +267,7 @@ registerSuite('lib/Task', {
           assert.strictEqual(value, 1);
         })
       );
-    }
+    },
   },
 
   '.reject': {
@@ -298,7 +304,7 @@ registerSuite('lib/Task', {
       const thenable = <PromiseLike<any>>{
         then(_f: Function, r: Function) {
           r(new Error('foo'));
-        }
+        },
       };
       Task.resolve(thenable).then(
         dfd.rejectOnError(() => {
@@ -322,7 +328,7 @@ registerSuite('lib/Task', {
         resolved,
         'promise should not have resolved synchronously'
       );
-    }
+    },
   },
 
   '.resolve': {
@@ -353,7 +359,7 @@ registerSuite('lib/Task', {
       const thenable = <PromiseLike<any>>{
         then(f: Function) {
           f(2);
-        }
+        },
       };
       Task.resolve(thenable).then(
         dfd.callback((value: number) => {
@@ -371,7 +377,7 @@ registerSuite('lib/Task', {
         resolved,
         'promise should not have resolved synchronously'
       );
-    }
+    },
   },
 
   '#cancel': {
@@ -380,7 +386,7 @@ registerSuite('lib/Task', {
       let cancelerCalled = false;
       let resolver!: () => void;
       const task = new Task(
-        resolve => {
+        (resolve) => {
           resolver = resolve;
         },
         () => {
@@ -400,13 +406,16 @@ registerSuite('lib/Task', {
         'Canceler should have been called synchronously'
       );
 
-      setTimeout(dfd.callback(() => {}), 100);
+      setTimeout(
+        dfd.callback(() => {}),
+        100
+      );
     },
 
     'no canceler'() {
       const dfd = this.async();
       let resolver: any;
-      const task = new Task(resolve => {
+      const task = new Task((resolve) => {
         resolver = resolve;
       }).then(
         dfd.rejectOnError(() => {
@@ -417,7 +426,10 @@ registerSuite('lib/Task', {
       task.cancel();
       resolver();
 
-      setTimeout(dfd.callback(() => {}), 100);
+      setTimeout(
+        dfd.callback(() => {}),
+        100
+      );
     },
 
     "resolved/rejected promises don't call canceler"() {
@@ -425,7 +437,7 @@ registerSuite('lib/Task', {
       let resolved = false;
       let cancelCalled = false;
       const task = new Task(
-        resolve => {
+        (resolve) => {
           setTimeout(resolve);
         },
         () => {
@@ -446,7 +458,7 @@ registerSuite('lib/Task', {
         }),
         100
       );
-    }
+    },
   },
 
   '#finally': {
@@ -454,7 +466,7 @@ registerSuite('lib/Task', {
       const dfd = this.async();
       let resolver!: () => void;
       const task = new Task(
-        resolve => {
+        (resolve) => {
           resolver = resolve;
         },
         () => {}
@@ -483,10 +495,10 @@ registerSuite('lib/Task', {
         () => {}
       )
         .then(
-          dfd.rejectOnError(function() {
+          dfd.rejectOnError(function () {
             assert(false, 'Task should not have resolved');
           }),
-          dfd.rejectOnError(function() {
+          dfd.rejectOnError(function () {
             assert(false, 'Task should not have rejected');
           })
         )
@@ -500,7 +512,7 @@ registerSuite('lib/Task', {
       const dfd = this.async(5000, 4);
       let resolver!: () => void;
       const task = new Task(
-        resolve => {
+        (resolve) => {
           resolver = resolve;
         },
         () => {}
@@ -523,24 +535,24 @@ registerSuite('lib/Task', {
       let resolver: any;
 
       const task = new Task(
-        resolve => {
+        (resolve) => {
           resolver = resolve;
         },
         () => {}
       )
-        .then(function() {
+        .then(function () {
           task.cancel();
-          return new Promise(resolve => {
+          return new Promise((resolve) => {
             setTimeout(resolve);
           });
         })
         .then(
-          dfd.rejectOnError(function() {
+          dfd.rejectOnError(function () {
             assert(false, 'should not have run');
           })
         )
         .then(
-          dfd.rejectOnError(function() {
+          dfd.rejectOnError(function () {
             assert(false, 'should not have run');
           })
         )
@@ -554,24 +566,24 @@ registerSuite('lib/Task', {
       let resolver: any;
 
       const task = new Task(
-        resolve => {
+        (resolve) => {
           resolver = resolve;
         },
         () => {}
       )
-        .then(function() {
+        .then(function () {
           task.cancel();
           return new Promise((_resolve, reject) => {
             setTimeout(reject);
           }).catch(() => {});
         })
         .then(
-          dfd.rejectOnError(function() {
+          dfd.rejectOnError(function () {
             assert(false, 'should not have run');
           })
         )
         .then(
-          dfd.rejectOnError(function() {
+          dfd.rejectOnError(function () {
             assert(false, 'should not have run');
           })
         )
@@ -592,7 +604,7 @@ registerSuite('lib/Task', {
     'finally is only called once when called after cancel'() {
       let callCount = 0;
       const dfd = this.async();
-      const task = new Task(resolve => {
+      const task = new Task((resolve) => {
         setTimeout(resolve, 10);
       });
       task.cancel();
@@ -613,7 +625,7 @@ registerSuite('lib/Task', {
     'finally is only called once when called before cancel'() {
       let callCount = 0;
       const dfd = this.async();
-      const task = new Task(resolve => {
+      const task = new Task((resolve) => {
         setTimeout(resolve, 10);
       });
       task.finally(
@@ -633,7 +645,7 @@ registerSuite('lib/Task', {
 
     'finally does not change the resolve value'() {
       const dfd = this.async();
-      const task = new Task(resolve => {
+      const task = new Task((resolve) => {
         setTimeout(resolve.bind(null, 'test'), 10);
       });
       const finalizedTask = task.finally(() => 'changed');
@@ -712,7 +724,7 @@ registerSuite('lib/Task', {
     'thrown error rejects'() {
       const dfd = this.async();
       Task.resolve(5)
-        .finally(function() {
+        .finally(function () {
           throw new Error('foo');
         })
         .then(
@@ -751,7 +763,7 @@ registerSuite('lib/Task', {
             assert.propertyVal(reason, 'message', 'foo');
           })
         );
-    }
+    },
   },
 
   '#catch': {
@@ -784,7 +796,7 @@ registerSuite('lib/Task', {
     'resolver throws'() {
       const dfd = this.async();
       const error = new Error('foo');
-      const promise = new Task(function() {
+      const promise = new Task(function () {
         throw error;
       });
 
@@ -817,7 +829,7 @@ registerSuite('lib/Task', {
           throw error;
         });
 
-        const promise = new Task(function(resolve: Function) {
+        const promise = new Task(function (resolve: Function) {
           resolve(foreign);
         });
         promise.catch(
@@ -851,7 +863,7 @@ registerSuite('lib/Task', {
             throw error;
           });
 
-          const promise = new Task(resolve => {
+          const promise = new Task((resolve) => {
             resolve(foreign);
           });
           promise.catch(
@@ -861,7 +873,7 @@ registerSuite('lib/Task', {
           );
         },
 
-        'from handler': function() {
+        'from handler': function () {
           const dfd = this.async();
           const error = new Error('foo');
           const foreign = Task.resolve().then(() => {
@@ -875,9 +887,9 @@ registerSuite('lib/Task', {
                 assert.strictEqual(err, error);
               })
             );
-        }
-      }
-    }
+        },
+      },
+    },
   },
 
   '#then': {
@@ -914,7 +926,7 @@ registerSuite('lib/Task', {
             f(1);
             f(2);
           }
-        }
+        },
       };
 
       let calledAlready = false;
@@ -933,7 +945,7 @@ registerSuite('lib/Task', {
       p.catch(dfd.reject.bind(dfd));
 
       setTimeout(() => dfd.resolve(), 100);
-    }
+    },
   },
 
   constructed: {
@@ -941,8 +953,8 @@ registerSuite('lib/Task', {
       const dfd = this.async();
       let resolver!: () => void;
       let resolved = false;
-      new Promise(resolve => {
-        resolver = resolve;
+      new Promise((resolve) => {
+        resolver = resolve as typeof resolver;
       }).then(
         dfd.callback(() => {
           resolved = true;
@@ -971,8 +983,8 @@ registerSuite('lib/Task', {
       );
       assert.isFalse(resolved, 'should not be resolved');
       resolver();
-    }
-  }
+    },
+  },
 });
 
 function cancelTasks(pending: ListOfPromises | DictionaryOfPromises) {

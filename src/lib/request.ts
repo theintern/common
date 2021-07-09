@@ -6,9 +6,9 @@
 import axios, {
   AxiosRequestConfig,
   AxiosProxyConfig,
-  AxiosResponse
+  AxiosResponse,
 } from 'axios';
-import * as qs from 'qs';
+import qs from 'qs';
 import Task, { CancellablePromise } from './Task';
 import Evented from './Evented';
 
@@ -84,7 +84,7 @@ export default function request(
     // Always get response as raw data
     responseType: 'arraybuffer',
     paramsSerializer: serializeParams,
-    transformResponse: undefined
+    transformResponse: undefined,
   };
 
   const cancelSource = axios.CancelToken.source();
@@ -105,7 +105,7 @@ export default function request(
   if (proxy) {
     const proxyUrl = new URL(proxy);
     req.proxy = <AxiosProxyConfig>{
-      host: proxyUrl.hostname
+      host: proxyUrl.hostname,
     };
     if (/^https:/.test(url)) {
       req.proxy.protocol = 'https';
@@ -116,7 +116,7 @@ export default function request(
     if (proxyUrl.username) {
       req.proxy.auth = {
         username: proxyUrl.username,
-        password: proxyUrl.password
+        password: proxyUrl.password,
       };
     }
   }
@@ -127,11 +127,11 @@ export default function request(
 
   return new Task<Response>(
     (resolve, reject) => {
-      axios(req).then(response => {
+      axios(req).then((response) => {
         if (onDownloadProgress && response && response.data) {
           onDownloadProgress({
             total: response.data.length,
-            received: response.data.length
+            received: response.data.length,
           });
         }
         resolve(new ResponseClass(response));
@@ -166,8 +166,10 @@ class HeadersClass {
   }
 }
 
-class ResponseClass<T = any> extends Evented<ProgressEvent>
-  implements Response {
+class ResponseClass<T = any>
+  extends Evented<ProgressEvent>
+  implements Response
+{
   private response: AxiosResponse;
   private headersAccessor: Headers;
   private stringValue: string | PromiseLike<string> | undefined;
@@ -250,10 +252,10 @@ function getFileReaderPromise<T extends string | ArrayBuffer>(
   reader: FileReader
 ): Promise<T> {
   return new Promise((resolve, reject) => {
-    reader.onload = function() {
+    reader.onload = function () {
       resolve(<T>reader.result);
     };
-    reader.onerror = function() {
+    reader.onerror = function () {
       reject(reader.error);
     };
   });

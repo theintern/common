@@ -1,4 +1,4 @@
-import * as moxios from 'moxios';
+import moxios from 'moxios';
 import request, { Response } from '../../../src/lib/request';
 
 const { registerSuite } = intern.getInterface('object');
@@ -27,8 +27,8 @@ registerSuite('lib/request', {
             response: 'foo',
             headers: {
               'Content-Type': 'text/plain',
-              'A-Test-Header': 'Some Value'
-            }
+              'A-Test-Header': 'Some Value',
+            },
           });
         })
       );
@@ -81,7 +81,7 @@ registerSuite('lib/request', {
         const request = moxios.requests.mostRecent();
         request.respondWith({
           status: 400,
-          statusText: 'Not Found'
+          statusText: 'Not Found',
         });
       });
 
@@ -115,7 +115,7 @@ registerSuite('lib/request', {
           responded = true;
           request.respondWith({
             status: 200,
-            statusText: 'OK'
+            statusText: 'OK',
           });
         }, 1000);
       });
@@ -149,7 +149,7 @@ registerSuite('lib/request', {
       request('test.html', {
         onDownloadProgress: () => {
           progressed = true;
-        }
+        },
       }).then(
         dfd.callback(() => {
           assert.isTrue(progressed);
@@ -165,14 +165,14 @@ registerSuite('lib/request', {
           const request = moxios.requests.mostRecent();
           assert.deepEqual(request.config.auth, {
             username: 'user',
-            password: 'pass'
+            password: 'pass',
           });
         })
       );
 
       request('test.html', {
         username: 'user',
-        password: 'pass'
+        password: 'pass',
       });
     },
 
@@ -188,14 +188,14 @@ registerSuite('lib/request', {
             port: 8080,
             auth: {
               username: 'user',
-              password: 'pass'
-            }
+              password: 'pass',
+            },
           });
         })
       );
 
       request('test.html', {
-        proxy: 'http://user:pass@thing.local:8080'
+        proxy: 'http://user:pass@thing.local:8080',
       });
     },
 
@@ -208,7 +208,7 @@ registerSuite('lib/request', {
           assert.match(request.config.method!, /^get$/i, 'Unexpected method');
           request.respondWith({
             status: 200,
-            response: JSON.stringify([{ name: 'foo' }])
+            response: JSON.stringify([{ name: 'foo' }]),
           });
         })
       );
@@ -312,7 +312,7 @@ registerSuite('lib/request', {
 
       request('test.html', {
         method: 'post',
-        data: 'some body'
+        data: 'some body',
       }).then(dfd.callback(() => {}));
     },
 
@@ -330,8 +330,8 @@ registerSuite('lib/request', {
 
       request('test.html', {
         method: 'put',
-        data: 'some body'
+        data: 'some body',
       }).then(dfd.callback(() => {}));
-    }
-  }
+    },
+  },
 });

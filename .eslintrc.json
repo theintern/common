@@ -1,0 +1,7 @@
+{
+	"extends": "./node_modules/@theintern/dev/eslint.config.js",
+	"rules": {
+		"prefer-const": "off",
+		"@typescript-eslint/no-unnecessary-type-assertion": "off"
+	}
+}

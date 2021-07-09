@@ -1,6 +1,7 @@
 {
   "browser": {
-    "suites": "_build/tests/browserUnit.js"
+    "suites": "_build/tests/browserUnit.js",
+    "plugins": "_build/tests/browserShim.js"
   },
   "node": {
     "suites": "_build/tests/node*.js",
